@@ -51,6 +51,8 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable{
     // Replay attack prevention: keep a track of already minted token id 
     mapping(uint256 => bool) public usedVouchers;
 
+    event VoucherRedeemed(address indexed redeemer, uint256 indexed tokenID);
+
     constructor(address initialOwner, address _authorizedSigner) ERC721("LazyNFT", "LNFT") EIP712("LazyNFT-Domain", "1") Ownable(initialOwner) {
         authorizedSigner = _authorizedSigner;
     }
@@ -59,4 +61,28 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable{
     function setAuthorizedSigner(address signer) external onlyOwner {
         authorizedSigner = signer;
     }
+
+    function redeem(address redeemer, MintVoucher calldata voucher, bytes calldata signature) external payable {
+
+        // 1. replay protection
+        require(!usedVouchers[voucher.tokenID], "Voucher already used.");
+
+        // 2. value check
+        require(msg.value >= voucher.minPrice, "Insufficient funds.");
+
+        // 3. cryptographic verification
+        address signer = _verify(voucher, signature);
+        require(signer == authorizedSigner, "Invalid signer");
+
+        // 4. state update
+        usedVouchers[voucher.tokenID] = true;
+
+        // 5. execution
+        _mint(redeemer, voucher.tokenID);
+        _setTokenURI(voucher.tokenID, voucher.uri);
+
+        emit VoucherRedeemed(redeemer, voucher.tokenID);
+    }
+
+    function _verify(MintVoucher calldata voucher, bytes calldata signature) internal view returns(address) {}
 }
