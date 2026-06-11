@@ -19,8 +19,7 @@
 // private
 // view & pure functions
 
-
-// SPDX-License-Identifier: MIT 
+// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.24;
 
@@ -30,8 +29,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-contract LazyNFT is ERC721URIStorage, EIP712, Ownable{
-
+contract LazyNFT is ERC721URIStorage, EIP712, Ownable {
     using ECDSA for bytes32;
 
     // authorized wallet address that creates off-chain signatures
@@ -48,12 +46,16 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable{
     // keccak256("MintVoucher(uint256 tokenID, uint256 minPrice, string uri)")
     bytes32 public constant VOUCHER_TYPEHASH = 0xbfbc9c3b0ebfde7b278bf1335b719cb49edb51820dd822c9c22ebf8fc0e2a392;
 
-    // Replay attack prevention: keep a track of already minted token id 
+    // Replay attack prevention: keep a track of already minted token id
     mapping(uint256 => bool) public usedVouchers;
 
     event VoucherRedeemed(address indexed redeemer, uint256 indexed tokenID);
 
-    constructor(address initialOwner, address _authorizedSigner) ERC721("LazyNFT", "LNFT") EIP712("LazyNFT-Domain", "1") Ownable(initialOwner) {
+    constructor(address initialOwner, address _authorizedSigner)
+        ERC721("LazyNFT", "LNFT")
+        EIP712("LazyNFT-Domain", "1")
+        Ownable(initialOwner)
+    {
         authorizedSigner = _authorizedSigner;
     }
 
@@ -63,7 +65,6 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable{
     }
 
     function redeem(address redeemer, MintVoucher calldata voucher, bytes calldata signature) external payable {
-
         // 1. replay protection
         require(!usedVouchers[voucher.tokenID], "Voucher already used.");
 
@@ -84,5 +85,22 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable{
         emit VoucherRedeemed(redeemer, voucher.tokenID);
     }
 
-    function _verify(MintVoucher calldata voucher, bytes calldata signature) internal view returns(address) {}
+    /// @notice an internal function to hash voucher and recover signer's address
+    function _verify(MintVoucher calldata voucher, bytes calldata signature) internal view returns (address) {
+        // creating struct hash according to eip-712 specification
+        // for uri part : strings must be hashed dynamically
+        bytes32 struchHash =
+            keccak256(abi.encode(VOUCHER_TYPEHASH, voucher.tokenID, voucher.minPrice, keccak256(bytes(voucher.uri))));
+
+        // generating final digest using domain separator (function is from EIP712.sol)
+        bytes32 digest = _hashTypedDataV4(struchHash);
+
+        // recovering and returing the signature
+        return digest.recover(signature); // Because we attached the library to bytes32, digest becomes the implicit first parameter, and we only need to pass the second parameter in the parentheses
+    }
+
+    /// @notice incase any eth was collected as minting fees
+    function withdrawy() external onlyOwner {
+        payable(owner()).transfer(address(this).balance);
+    }
 }
