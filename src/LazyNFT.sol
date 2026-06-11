@@ -37,7 +37,7 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable {
 
     // struct matching the exact format of off chain signed data
     struct MintVoucher {
-        uint256 tokenID;
+        uint256 tokenId;
         uint256 minPrice;
         string uri;
     }
@@ -49,7 +49,7 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable {
     // Replay attack prevention: keep a track of already minted token id
     mapping(uint256 => bool) public usedVouchers;
 
-    event VoucherRedeemed(address indexed redeemer, uint256 indexed tokenID);
+    event VoucherRedeemed(address indexed redeemer, uint256 indexed tokenId);
 
     constructor(address initialOwner, address _authorizedSigner)
         ERC721("LazyNFT", "LNFT")
@@ -66,7 +66,7 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable {
 
     function redeem(address redeemer, MintVoucher calldata voucher, bytes calldata signature) external payable {
         // 1. replay protection
-        require(!usedVouchers[voucher.tokenID], "Voucher already used.");
+        require(!usedVouchers[voucher.tokenId], "Voucher already used.");
 
         // 2. value check
         require(msg.value >= voucher.minPrice, "Insufficient funds.");
@@ -76,13 +76,13 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable {
         require(signer == authorizedSigner, "Invalid signer");
 
         // 4. state update
-        usedVouchers[voucher.tokenID] = true;
+        usedVouchers[voucher.tokenId] = true;
 
         // 5. execution
-        _mint(redeemer, voucher.tokenID);
-        _setTokenURI(voucher.tokenID, voucher.uri);
+        _mint(redeemer, voucher.tokenId);
+        _setTokenURI(voucher.tokenId, voucher.uri);
 
-        emit VoucherRedeemed(redeemer, voucher.tokenID);
+        emit VoucherRedeemed(redeemer, voucher.tokenId);
     }
 
     /// @notice an internal function to hash voucher and recover signer's address
@@ -90,7 +90,7 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable {
         // creating struct hash according to eip-712 specification
         // for uri part : strings must be hashed dynamically
         bytes32 struchHash =
-            keccak256(abi.encode(VOUCHER_TYPEHASH, voucher.tokenID, voucher.minPrice, keccak256(bytes(voucher.uri))));
+            keccak256(abi.encode(VOUCHER_TYPEHASH, voucher.tokenId, voucher.minPrice, keccak256(bytes(voucher.uri))));
 
         // generating final digest using domain separator (function is from EIP712.sol)
         bytes32 digest = _hashTypedDataV4(struchHash);

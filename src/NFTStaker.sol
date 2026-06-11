@@ -2,4 +2,15 @@
 
 pragma solidity ^0.8.24;
 
-contract NFTStaker {}
+import {LazyNFT} from "./LazyNFT.sol";
+import {RewardToken} from "./RewardToken.sol";
+// import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
+contract NFTStaker {
+
+    function stake() external {}
+
+    function unstake() external {}
+
+    function claimRewards() external {}
+}
