@@ -100,7 +100,7 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable {
     }
 
     /// @notice incase any eth was collected as minting fees
-    function withdrawy() external onlyOwner {
+    function withdraw() external onlyOwner {
         payable(owner()).transfer(address(this).balance);
     }
 }
