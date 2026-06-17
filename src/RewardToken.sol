@@ -17,15 +17,21 @@ contract RewardToken is ERC20, Ownable {
      * @dev throws if called by any account other than the authorized one
      */
     modifier onlyStakingContract() {
-        require(msg.sender == stakingContract, "Caller is not the staking contract");
+        _onlyStakingContract();
         _;
+    }
+
+    function _onlyStakingContract() internal view {
+        require(msg.sender == stakingContract, "Caller is not the staking contract");
     }
 
     /**
      * @notice Constructor sets token identity parameters and initial owner.
      * @param initialOwner The address that deploys the contract and configures architectures.
      */
-    constructor(address initialOwner) ERC20("RewardToken", "RT") Ownable(initialOwner) {}
+    constructor(address initialOwner) ERC20("RewardToken", "RT") Ownable(initialOwner) {
+        stakingContract = msg.sender;
+    }
 
     /**
      * @notice Links the NFT Staking contract to this asset.
@@ -33,8 +39,8 @@ contract RewardToken is ERC20, Ownable {
      * @param _stakingContract The deployed address of the NFTStaker contract.
      */
     function setStakingContract(address _stakingContract) public onlyStakingContract {
-        require(_stakingContract != address(0), "Invalid address");
-        require(stakingContract == address(0), "Contract already authorized");
+        require(_stakingContract != address(0), "Invalid stakingContract address");
+        require(stakingContract != address(0), "Contract already authorized");
 
         stakingContract = _stakingContract;
 

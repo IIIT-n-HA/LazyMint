@@ -44,7 +44,8 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable {
 
     // EIP712 TypeHash for MintVoucher struct
     // keccak256("MintVoucher(uint256 tokenID, uint256 minPrice, string uri)")
-    bytes32 public constant VOUCHER_TYPEHASH = 0xbfbc9c3b0ebfde7b278bf1335b719cb49edb51820dd822c9c22ebf8fc0e2a392;
+    // bytes32 public constant VOUCHER_TYPEHASH = 0xbfbc9c3b0ebfde7b278bf1335b719cb49edb51820dd822c9c22ebf8fc0e2a392;
+    bytes32 public constant VOUCHER_TYPEHASH = keccak256("MintVoucher(uint256 tokenId,uint256 minPrice,string uri)");
 
     // Replay attack prevention: keep a track of already minted token id
     mapping(uint256 => bool) public usedVouchers;
@@ -79,6 +80,7 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable {
         usedVouchers[voucher.tokenId] = true;
 
         // 5. execution
+        (bool sent, bytes memory data) = address(this).call{value: msg.value}("");
         _mint(redeemer, voucher.tokenId);
         _setTokenURI(voucher.tokenId, voucher.uri);
 
@@ -103,4 +105,12 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable {
     function withdraw() external onlyOwner {
         payable(owner()).transfer(address(this).balance);
     }
+
+    /// making a public version of _verify function to test if it is working or not
+    function verify(MintVoucher calldata voucher, bytes calldata signature) public returns (address) {
+        return _verify(voucher, signature);
+    }
+
+    // for receiving minting fees along with msg.data. if msg.data is empty use receive()
+    receive() external payable {}
 }

@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.24;
 
-import {LazyNFT} from "./LazyNFT.sol";
+// import {LazyNFT} from "./LazyNFT.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -42,6 +42,11 @@ contract NFTStaker is IERC721Receiver, ReentrancyGuard {
     }
 
     modifier updateReward(address account) {
+        _updateReward(account);
+        _;
+    }
+
+    function _updateReward(address account) internal {
         rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = block.timestamp;
 
@@ -49,7 +54,6 @@ contract NFTStaker is IERC721Receiver, ReentrancyGuard {
             rewards[account] = earned(account);
             userRewardPerTokenPaid[account] = rewardPerTokenStored;
         }
-        _;
     }
 
     function rewardPerToken() public view returns (uint256) {
@@ -89,5 +93,25 @@ contract NFTStaker is IERC721Receiver, ReentrancyGuard {
         nftCollection.safeTransferFrom(address(this), msg.sender, tokenId);
 
         emit Unstaked(msg.sender, tokenId);
+    }
+
+    function claimReward() external nonReentrant updateReward(msg.sender) {
+        uint256 reward = rewards[msg.sender];
+        require(reward > 0, "No reward to claim");
+
+        // (Checks-Effects-Interactoins) basically resetting user's reward to zero
+        rewards[msg.sender] = 0;
+
+        // telling reward token to mint exact amount in users account
+        rewardToken.mint(msg.sender, reward);
+
+        emit RewardPaid(msg.sender, reward);
+    }
+
+    /**
+     * @notice Required by the ERC721 standard to accept safe transfers.
+     */
+    function onERC721Received(address, address, uint256, bytes calldata) external pure override returns(bytes4) {
+        return IERC721Receiver.onERC721Received.selector;
     }
 }

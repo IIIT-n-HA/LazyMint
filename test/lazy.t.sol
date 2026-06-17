@@ -4,10 +4,10 @@ pragma solidity ^0.8.24;
 
 import {Test} from "forge-std/Test.sol";
 import {LazyNFT} from "../src/LazyNFT.sol";
-import {lazyDeploy} from "../script/lazyDeploy.s.sol";
+// import {lazyDeploy} from "../script/lazyDeploy.s.sol";
 
 contract lazy is Test {
-    lazyDeploy public deployer;
+    // lazyDeploy public deployer;
     LazyNFT public lazyNFT;
 
     // --- Wallets ---
@@ -21,11 +21,13 @@ contract lazy is Test {
     // --- EIP-712 Constants ---
     bytes32 constant DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
+    // bytes32 constant VOUCHER_TYPEHASH = keccak256("MintVoucher(uint256 tokenId,uint256 minPrice,string uri)");
     bytes32 constant VOUCHER_TYPEHASH = keccak256("MintVoucher(uint256 tokenId,uint256 minPrice,string uri)");
 
     function setUp() public {
-        deployer = new lazyDeploy();
-        lazyNFT = deployer.run();
+        // deployer = new lazyDeploy();
+        // lazyNFT = deployer.run();
+        lazyNFT = new LazyNFT(address(this), backendSigner);
     }
 
     function test_VerifyOwner() public {
@@ -61,9 +63,8 @@ contract lazy is Test {
             )
         );
 
-        bytes32 structHash = keccak256(
-            abi.encode(VOUCHER_TYPEHASH, voucher.tokenId, voucher.minPrice, keccak256(abi.encode(voucher.uri)))
-        );
+        bytes32 structHash =
+            keccak256(abi.encode(VOUCHER_TYPEHASH, voucher.tokenId, voucher.minPrice, keccak256(bytes(voucher.uri))));
 
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
 
@@ -72,17 +73,37 @@ contract lazy is Test {
         return (voucher, abi.encodePacked(r, s, v));
     }
 
-    // function test_Redeem() public {
-    //     // Arrange
-    //     (LazyNFT.MintVoucher memory voucher, bytes memory signature) =
-    //         _generateSignature(1, 0, "ipfs://metadata/1.json", backendPrivateKey);
+    function test_Redeem() public {
+        // Arrange
+        (LazyNFT.MintVoucher memory voucher, bytes memory signature) =
+            _generateSignature(1, 0, "ipfs://metadata/1.json", backendPrivateKey);
 
+        // Act
+        vm.prank(user);
+        lazyNFT.redeem(user, voucher, signature);
+        // Assert
+        vm.assertEq(lazyNFT.ownerOf(1), user);
+        vm.assertEq(lazyNFT.tokenURI(1), "ipfs://metadata/1.json");
+        vm.assertTrue(lazyNFT.usedVouchers(1));
+    }
+
+
+    function test_Verify() public {
+        // Arrange
+        (LazyNFT.MintVoucher memory voucher, bytes memory expectedSignature) = _generateSignature(1, 0, "ipfs://metadata/1.json", backendPrivateKey);
+        // Act
+        address actualSignerAddress = lazyNFT.verify(voucher, expectedSignature);
+        // Assert
+        assertEq(actualSignerAddress, lazyNFT.authorizedSigner());
+    }
+
+    // need to work on this part
+    // function test_Withdraw() public {
+    //     // Arrange
     //     // Act
-    //     vm.prank(user);
-    //     lazyNFT.redeem(user, voucher, signature);
+    //     test_Redeem();
+    //     lazyNFT.withdraw();
     //     // Assert
-    //     vm.assertEq(lazyNFT.ownerOf(1), user);
-    //     vm.assertEq(lazyNFT.tokenURI(1), "ipfs://metadata/1.json");
-    //     vm.assertTrue(lazyNFT.usedVouchers(1));
+    //     assertEq(address(lazyNFT).balance, 0);
     // }
 }
