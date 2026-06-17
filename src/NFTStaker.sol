@@ -82,7 +82,7 @@ contract NFTStaker is IERC721Receiver, ReentrancyGuard {
     }
 
     function unstake(uint256 tokenId) external nonReentrant updateReward(msg.sender) {
-        require(nftCollection.ownerOf(tokenId) == msg.sender, "You do not own this token");
+        require(nftOwners[tokenId] == msg.sender, "You do not own this token");
 
         // Update states
         totalStaked -= 1;
