@@ -3,8 +3,19 @@
 pragma solidity ^0.8.24;
 
 import {Test} from "forge-std/Test.sol";
-import {NFTStaker} from "../src/NFTStaker.sol";
+import {NFTStaker} from "../../src/NFTStaker.sol";
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+
+
+contract Mock20 is ERC20 {
+    constructor() ERC20("Mock20", "Mk") {}
+
+    function mint(address to, uint256 amount) public {
+        _mint(to, amount);
+    }
+}
 
 contract MockNFT is ERC721 {
     constructor() ERC721("Mock", "Mck") {}
@@ -18,13 +29,14 @@ contract stake is Test {
     NFTStaker public staker;
 
     MockNFT public NFT;
-    address public RTK = makeAddr("rtk");
+    Mock20 public RTK;
     address public USER = makeAddr("user");
     address public USER2 = makeAddr("user2");
 
     function setUp() public {
         NFT = new MockNFT();
-        staker = new NFTStaker(address(NFT), RTK);
+        RTK = new Mock20();
+        staker = new NFTStaker(address(NFT), address(RTK));
     }
 
     function test_Stake() public {
@@ -74,16 +86,40 @@ contract stake is Test {
     }
 
     // probably smthng wrong with the updateReward modifier that's why we are getting error here. need to work on it. 
-    // function test_ClaimReward() public {
-    //     // Arrange
-    //     test_Stake();
-    //     // Act
-    //     vm.warp(block.timestamp + 100);
-    //     uint256 expectedReward = staker.rewardRatePerSecond() * 100;
+    function test_ClaimReward() public {
+        // Arrange
+        NFT.mint(USER, 1);
+        vm.startPrank(USER);
+        NFT.approve(address(staker), 1);
+        staker.stake(1);
+        vm.stopPrank();
+        // Act
+        vm.warp(block.timestamp + 100);
+        uint256 expectedReward = staker.rewardRatePerSecond() * 100;
 
-    //     vm.prank(USER);
-    //     staker.claimReward();
-    //     // Assert
-    //     assertEq(staker.rewards(USER), 0);
-    // }
+        vm.prank(USER);
+        staker.claimReward();
+        // Assert
+        assertEq(RTK.balanceOf(USER), expectedReward);
+        assertEq(staker.balanceOf(USER), 1);
+    }
+
+
+    function test_RewardAccumulationOverTime() public {
+        // Arrange
+        NFT.mint(USER, 1);
+        // Act
+        vm.startPrank(USER);
+        NFT.approve(address(staker), 1);
+        staker.stake(1);
+        vm.stopPrank();
+
+        uint256 expectedRewardPerSecond = staker.rewardRatePerSecond(); // set by us in the actual contract
+
+        vm.warp(block.timestamp + 100); // moving time to 100 seconds ahead
+
+        uint256 expectedTotalReward = expectedRewardPerSecond * 100;
+        // Assert
+        assertEq(staker.earned(USER), expectedTotalReward);
+    }
 }

@@ -48,12 +48,13 @@ contract NFTStaker is IERC721Receiver, ReentrancyGuard {
 
     function _updateReward(address account) internal {
         rewardPerTokenStored = rewardPerToken();
-        lastUpdateTime = block.timestamp;
 
         if (account != address(0)) {
             rewards[account] = earned(account);
             userRewardPerTokenPaid[account] = rewardPerTokenStored;
         }
+        
+        lastUpdateTime = block.timestamp;
     }
 
     function rewardPerToken() public view returns (uint256) {
