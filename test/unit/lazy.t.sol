@@ -4,7 +4,6 @@ pragma solidity ^0.8.24;
 
 import {Test} from "forge-std/Test.sol";
 import {LazyNFT} from "../../src/LazyNFT.sol";
-// import {lazyDeploy} from "../script/lazyDeploy.s.sol";
 
 contract lazy is Test {
     // lazyDeploy public deployer;

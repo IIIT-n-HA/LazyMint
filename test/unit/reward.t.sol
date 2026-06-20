@@ -36,10 +36,16 @@ contract reward is Test {
     }
 
     function test_Mint() public {
-        // Arrange
-        // Act
+        // Arrange, Act
         rt.mint(RECEIVER, rewardAmount);
         // Assert 
-        // i guess need to work on mock contract to actually recieve it so that i can check assert --> still working on it
+        assertEq(rt.balanceOf(RECEIVER), rewardAmount);
+    }
+
+    function test_Modifier() public view {
+        // Arrange
+        // Act
+        // Assert
+        assertEq(rt.stakingContract(),address(this));
     }
 }
