@@ -29,7 +29,7 @@ contract lazy is Test {
         lazyNFT = new LazyNFT(address(this), backendSigner);
     }
 
-    function test_VerifyOwner() public {
+    function test_VerifyOwner() public view {
         // Arrange
         // Act
         // Assert
@@ -87,7 +87,7 @@ contract lazy is Test {
     }
 
 
-    function test_Verify() public {
+    function test_Verify() public view {
         // Arrange
         (LazyNFT.MintVoucher memory voucher, bytes memory expectedSignature) = _generateSignature(1, 0, "ipfs://metadata/1.json", backendPrivateKey);
         // Act

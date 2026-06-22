@@ -50,7 +50,7 @@ contract alpha is Test {
         bytes32 structHash =
             keccak256(abi.encode(VOUCHER_TYPEHASH, voucher.tokenId, voucher.minPrice, keccak256(bytes(voucher.uri))));
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(backendPrvKey, digest);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
         return (voucher, abi.encodePacked(r, s, v));
     }
 

@@ -80,7 +80,7 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable {
         usedVouchers[voucher.tokenId] = true;
 
         // 5. execution
-        (bool sent, bytes memory data) = address(this).call{value: msg.value}("");
+        // (bool sent, bytes memory data) = address(this).call{value: msg.value}(""); --> need to work on this
         _mint(redeemer, voucher.tokenId);
         _setTokenURI(voucher.tokenId, voucher.uri);
 
@@ -107,7 +107,7 @@ contract LazyNFT is ERC721URIStorage, EIP712, Ownable {
     }
 
     /// making a public version of _verify function to test if it is working or not
-    function verify(MintVoucher calldata voucher, bytes calldata signature) public returns (address) {
+    function verify(MintVoucher calldata voucher, bytes calldata signature) public view returns (address) {
         return _verify(voucher, signature);
     }
 
