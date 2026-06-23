@@ -1,0 +1,57 @@
+Compiling 61 files with Solc 0.8.30
+Solc 0.8.30 finished in 1.16s
+Compiler run successful with warnings:
+Warning (3420): Source file does not specify required compiler version! Consider adding "pragma solidity ^0.8.30;"
+--> test/scriptTest.t.sol
+
+Analysing contracts...
+Running tests...
+
+Ran 6 tests for test/unit/stake.t.sol:stake
+[PASS] test_ClaimReward() (gas: 297878)
+[PASS] test_RewardAccumulationOverTime() (gas: 197104)
+[PASS] test_Stake() (gas: 193590)
+[PASS] test_StakeButNotOwner() (gas: 135811)
+[PASS] test_Unstake() (gas: 251186)
+[PASS] test_UnstakeButNotOwner() (gas: 256346)
+Suite result: ok. 6 passed; 0 failed; 0 skipped; finished in 8.42ms (10.32ms CPU time)
+
+Ran 4 tests for test/unit/reward.t.sol:reward
+[PASS] test_Mint() (gas: 62922)
+[PASS] test_Modifier() (gas: 8101)
+[PASS] test_RightOwner() (gas: 13588)
+[PASS] test_SetStakingContract() (gas: 16229)
+Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 8.38ms (5.46ms CPU time)
+
+Ran 4 tests for test/unit/lazy.t.sol:lazy
+[PASS] test_Redeem() (gas: 132454)
+[PASS] test_SetAuthorizedSigner() (gas: 14650)
+[PASS] test_Verify() (gas: 25717)
+[PASS] test_VerifyOwner() (gas: 8065)
+Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 11.58ms (13.47ms CPU time)
+
+Ran 1 test for test/integration/alpha.t.sol:alpha
+[PASS] test_AL_DENTE() (gas: 392634)
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 12.42ms (5.92ms CPU time)
+
+Ran 4 test suites in 199.67ms (40.80ms CPU time): 15 tests passed, 0 failed, 0 skipped (15 total tests)
+
+╭---------------------------+-----------------+-----------------+----------------+----------------╮
+| File                      | % Lines         | % Statements    | % Branches     | % Funcs        |
++=================================================================================================+
+| script/lazyDeploy.s.sol   | 0.00% (0/5)     | 0.00% (0/4)     | 100.00% (0/0)  | 0.00% (0/1)    |
+|---------------------------+-----------------+-----------------+----------------+----------------|
+| script/rewardDeploy.s.sol | 0.00% (0/5)     | 0.00% (0/4)     | 100.00% (0/0)  | 0.00% (0/1)    |
+|---------------------------+-----------------+-----------------+----------------+----------------|
+| script/stakerDeploy.s.sol | 0.00% (0/5)     | 0.00% (0/4)     | 100.00% (0/0)  | 0.00% (0/1)    |
+|---------------------------+-----------------+-----------------+----------------+----------------|
+| src/LazyNFT.sol           | 90.91% (20/22)  | 95.00% (19/20)  | 50.00% (3/6)   | 83.33% (5/6)   |
+|---------------------------+-----------------+-----------------+----------------+----------------|
+| src/NFTStaker.sol         | 97.30% (36/37)  | 100.00% (31/31) | 75.00% (6/8)   | 88.89% (8/9)   |
+|---------------------------+-----------------+-----------------+----------------+----------------|
+| src/RewardToken.sol       | 100.00% (14/14) | 100.00% (9/9)   | 50.00% (3/6)   | 100.00% (5/5)  |
+|---------------------------+-----------------+-----------------+----------------+----------------|
+| test/unit/stake.t.sol     | 100.00% (4/4)   | 100.00% (2/2)   | 100.00% (0/0)  | 100.00% (2/2)  |
+|---------------------------+-----------------+-----------------+----------------+----------------|
+| Total                     | 80.43% (74/92)  | 82.43% (61/74)  | 60.00% (12/20) | 80.00% (20/25) |
+╰---------------------------+-----------------+-----------------+----------------+----------------╯
